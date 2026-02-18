@@ -1,0 +1,72 @@
+
+
+/* =========================================
+   RESET CSS BÁSICO
+   Elimina estilos por defecto del navegador
+   ========================================= */
+
+/* Elimina márgenes y rellenos por defecto */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /*content-box*/
+}
+
+/* Ajustes básicos del documento */
+html {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Elimina estilos por defecto del body */
+body {
+  font-family: sans-serif;
+  background-color: #fff;
+  color: #7b4141;
+}
+
+/* Elimina estilos de listas */
+ul,
+ol {
+  list-style: none;
+}
+
+/* Elimina subrayado y color por defecto en enlaces */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Normaliza imágenes */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Elimina estilos por defecto en botones e inputs */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+/* Evita que textarea cambie tamaño sin control */
+textarea {
+  resize: none;
+}
+
+/* Corrige comportamiento de tablas */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}

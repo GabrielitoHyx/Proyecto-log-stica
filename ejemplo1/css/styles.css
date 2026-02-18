@@ -1,0 +1,151 @@
+/* Aplicando box-sizing para incluir padding y border en el width/height */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+}
+
+/* Header */
+header {
+    background-color: #4c4eaf;
+    color: white;
+    padding: 20px; /* padding aplicado */
+    text-align: center;
+    
+    border-bottom: 4px solid #333; /* borde aplicado */
+    margin-bottom: 20px; /* margen aplicado */
+}
+
+/* Contenedor principal */
+.container {
+    display: flex; /* Flexbox para sidebar y contenido */
+    gap: 20px; /* espacio entre sidebar y content */
+    padding: 0 20px; /* padding lateral del container */
+}
+
+/* Sidebar (menu lateral) */
+.sidebar {
+    background-color: #333;
+    color: white;
+    width: 200px; /* ancho fijo */
+    padding: 20px; /* padding dentro del box */
+    border-radius: 8px; /* borde redondeado */
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    margin-bottom: 15px; /* margen inferior para separar los items */
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Contenido principal */
+.content {
+    background-color: white;
+    flex: 1; /* ocupa el espacio restante */
+    padding: 20px; /* padding aplicado */
+    border: 2px solid #ddd; /* borde aplicado */
+    border-radius: 8px;
+}
+
+/* Footer */
+footer {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 15px; /* padding aplicado */
+    border-top: 4px solid #333; /* borde aplicado */
+    margin-top: 20px; /* margen superior */
+}/* Aplicando box-sizing para incluir padding y border en el width/height */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+}
+
+/* Header */
+header {
+    background-color: #4c4eaf;
+    color: white;
+    padding: 20px; /* padding aplicado */
+    text-align: center;
+    
+    border-bottom: 4px solid #333; /* borde aplicado */
+    margin-bottom: 20px; /* margen aplicado */
+}
+
+/* Contenedor principal */
+.container {
+    display: flex; /* Flexbox para sidebar y contenido */
+    gap: 20px; /* espacio entre sidebar y content */
+    padding: 0 20px; /* padding lateral del container */
+}
+
+/* Sidebar (menu lateral) */
+.sidebar {
+    background-color: #333;
+    color: white;
+    width: 200px; /* ancho fijo */
+    padding: 20px; /* padding dentro del box */
+    border-radius: 8px; /* borde redondeado */
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar ul li {
+    margin-bottom: 15px; /* margen inferior para separar los items */
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Contenido principal */
+.content {
+    background-color: white;
+    flex: 1; /* ocupa el espacio restante */
+    padding: 20px; /* padding aplicado */
+    border: 2px solid #ddd; /* borde aplicado */
+    border-radius: 8px;
+}
+
+/* Footer */
+footer {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 15px; /* padding aplicado */
+    border-top: 4px solid #333; /* borde aplicado */
+    margin-top: 20px; /* margen superior */
+}
