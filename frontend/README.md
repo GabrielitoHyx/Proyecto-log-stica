@@ -71,3 +71,27 @@ Persona 4 (Backend/BD): Programar todo el CRUD (Crear, Leer, Actualizar, Borrar)
 
 Aquí vive nuestra pagina web:
 http://localhost:5173/
+
+# Módulo Frontend - Sistema de Gestión Logística
+
+Este módulo corresponde a la interfaz de usuario desarrollada en React (Vite) para la plataforma de logística.
+
+## 🛠️ Tecnologías y Librerías
+
+- React + Vite
+- React Router DOM (Manejo de navegación y rutas protegidas)
+- CSS Modular / Estilos modernos
+
+## 📱 Vistas Principales a Cargo (Persona 1)
+
+1. **Login:** Autenticación de usuarios basada en roles (Admin, Chofer, Cliente).
+2. **Dashboard:** Panel de control principal con métricas financieras y accesos rápidos.
+3. **Formularios de Viajes:** Interfaces para la creación y gestión de presupuestos y rutas.
+
+src/
+│
+├── components/ # (Navbar, Sidebar, Boton)
+├── pages/ # (Login.jsx, Dashboard.jsx, Viajes.jsx)
+├── context/ # (Para la sesión y JWT)
+├── App.jsx
+└── main.jsx
