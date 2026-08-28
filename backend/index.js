@@ -38,6 +38,26 @@ async function iniciarServidor() {
       });
     });
 
+    // ==========================================
+    // RUTAS DE LA API (ENDPOINTS)
+    // ==========================================
+
+    // Ruta para obtener todos los camiones de la base de datos
+    app.get("/api/camiones", async (req, res) => {
+      try {
+        // Ejecutamos una consulta directa a tu tabla del esquema 'l'
+        const resultado = await sql.query("SELECT * FROM l.Camion");
+
+        // Respondemos al cliente con los registros encontrados en formato JSON
+        res.json(resultado.recordset);
+      } catch (error) {
+        console.error("Error al consultar los camiones:", error);
+        res
+          .status(500)
+          .json({ mensaje: "Error interno del servidor al obtener camiones" });
+      }
+    });
+
     // Encendemos el servidor Express
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
