@@ -8,7 +8,7 @@ create table l.Usuario(
 ID_Usuario int identity (1,1) primary key,
 Correo varchar(100) unique not null,
 Password_Hash varchar (225) not null,
-Rol varchar(20) not null -- Puede ser: 'Admin', 'Chofer', 'Cliente'
+Rol varchar(20) not null -- Puede ser: 'Admin', 'Capturista chofer', 'Capturista viaje', 'Capturista camion y cliente'
 );
 
 -- 2. TABLA CHOFER
@@ -66,13 +66,14 @@ CREATE TABLE l.Viaje (
 -- 6. GASTOS DEL CAMION (Mantenimiento y Fijos)
 create table l.Gastos_Camion(
 ID_GCA int IDENTITY(1,1) PRIMARY KEY,
-ID_ca INT FOREIGN KEY REFERENCES l.Camion(ID_CA),
 Fecha_Gasto DATE,
 Tipo_Gasto VARCHAR(50), -- 'Fijo' o 'Mantenimiento'
 Concepto VARCHAR(100), -- Ej: 'Cambio de 6 llantas', 'Verificación 1er Semestre'
 Monto MONEY,
 Kilometraje_Al_Momento DECIMAL(10,2), -- Crucial para saber cuándo toca el próximo servicio
-Proximo_Aviso DATE -- Para que el sistema mande una alerta
+Proximo_Aviso DATE, -- Para que el sistema mande una alerta
+
+ID_ca INT FOREIGN KEY REFERENCES l.Camion(ID_CA)
 
 );
 
@@ -80,10 +81,15 @@ Proximo_Aviso DATE -- Para que el sistema mande una alerta
 -- En lugar de dos tablas casi iguales, usamos una enlazada al viaje
 CREATE TABLE l.Gastos_Viaje (
 ID_Gasto_Viaje INT IDENTITY(1,1) PRIMARY KEY,
-ID_Viaje INT FOREIGN KEY REFERENCES l.Viaje(ID_Viaje),
 Tipo_Gasto VARCHAR(50), -- Ej: 'Combustible', 'Caseta', 'Sueldo', 'viaticos'
 Concepto VARCHAR(100), -- Ej: 'Caseta Tepotzotlán' o 'Ticket Pemex'
 Monto_Presupuestado MONEY DEFAULT 0,
 Monto_Comprobado MONEY DEFAULT 0, -- El chofer llena esto en su app
-Fecha_Registro DATETIME DEFAULT GETDATE() -- Guarda automáticamente la fecha y hora del sistema al insertar
+Fecha_Registro DATETIME DEFAULT GETDATE(), -- Guarda automáticamente la fecha y hora del sistema al insertar
+ID_Viaje INT FOREIGN KEY REFERENCES l.Viaje(ID_Viaje)
 );
+
+
+insert into l.Usuario values ('g@gmail.com','dasdfasdfasfd','Admin')
+select * from l.Usuario
+
