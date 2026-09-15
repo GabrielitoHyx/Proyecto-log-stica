@@ -45,3 +45,17 @@ export const getUserByEmail = async (correo) => {
 
   return result.recordset[0];
 };
+
+export const updatePassword = async (idUsuario, passwordHash) => {
+
+  const pool = await getConnection();
+
+  await pool.request()
+    .input('idUsuario', idUsuario)
+    .input('passwordHash', passwordHash)
+    .query(`
+      UPDATE l.Usuario
+      SET Password_Hash = @passwordHash
+      WHERE ID_Usuario = @idUsuario
+    `);
+};
