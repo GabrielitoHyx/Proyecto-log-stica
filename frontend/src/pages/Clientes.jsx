@@ -3,6 +3,7 @@ import DataTable from "datatables.net-dt";
 import { useNavigate } from "react-router-dom";
 import "datatables.net-dt/css/dataTables.dataTables.css";
 import "./Clientes.css";
+import api from "../services/api";
 
 const Clientes = () => {
   const navigate = useNavigate();
@@ -32,20 +33,9 @@ const Clientes = () => {
 
   const cargarUsuariosDisponibles = async () => {
     try {
-      const respuesta = await fetch(
-        "http://localhost:5000/api/usuarios-clientes",
-        {
-          credentials: "include"
-        }
+      const datos = await api(
+        "/api/usuarios-clientes"
       );
-
-      const datos = await respuesta.json();
-
-      if (!respuesta.ok) {
-        throw new Error(
-          datos.error || "Error al obtener usuarios disponibles"
-        );
-      }
 
       setUsuariosDisponibles(datos);
     } catch (error) {
@@ -64,20 +54,9 @@ const Clientes = () => {
     tablaInstancia.current = new DataTable(tablaRef.current, {
       ajax: async function (data, callback) {
         try {
-          const respuesta = await fetch(
-            "http://localhost:5000/api/vclientes",
-            {
-              credentials: "include"
-            }
+          const datos = await api(
+            "/api/vclientes"
           );
-
-          const datos = await respuesta.json();
-
-          if (!respuesta.ok) {
-            throw new Error(
-              datos.error || "Error al obtener clientes"
-            );
-          }
 
           callback({
             data: datos
@@ -340,14 +319,10 @@ const Clientes = () => {
           return;
         }
 
-        const respuesta = await fetch(
-          "http://localhost:5000/api/rclientes",
+        const datos = await api(
+          "/api/rclientes",
           {
             method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json"
-            },
             body: JSON.stringify({
               correo: formulario.correo,
               nombre: formulario.nombre.trim(),
@@ -355,14 +330,6 @@ const Clientes = () => {
             })
           }
         );
-
-        const datos = await respuesta.json();
-
-        if (!respuesta.ok) {
-          throw new Error(
-            datos.error || "Error al registrar cliente"
-          );
-        }
 
         setMensaje(
           "Cliente registrado correctamente"
@@ -384,28 +351,16 @@ const Clientes = () => {
           );
         }
 
-        const respuesta = await fetch(
-          `http://localhost:5000/api/clientes/${clienteSeleccionado.ID_CLI}`,
+        const datos = await api(
+          `/api/clientes/${clienteSeleccionado.ID_CLI}`,
           {
             method: "PATCH",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json"
-            },
             body: JSON.stringify({
               nombre: formulario.nombre.trim(),
               telefono: formulario.telefono.trim()
             })
           }
         );
-
-        const datos = await respuesta.json();
-
-        if (!respuesta.ok) {
-          throw new Error(
-            datos.error || "Error al actualizar cliente"
-          );
-        }
 
         setMensaje(
           "Cliente actualizado correctamente"
@@ -473,28 +428,16 @@ const Clientes = () => {
     }
 
     try {
-      const respuesta = await fetch(
-        `http://localhost:5000/api/clientes/${clienteSeleccionado.ID_CLI}/estado`,
+
+      const datos = await api(
+        `/api/clientes/${clienteSeleccionado.ID_CLI}/estado`,
         {
           method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json"
-          },
           body: JSON.stringify({
             estado: nuevoEstado
           })
         }
       );
-
-      const datos = await respuesta.json();
-
-      if (!respuesta.ok) {
-        throw new Error(
-          datos.error ||
-          "Error al cambiar el estado del cliente"
-        );
-      }
 
       setMensaje(datos.mensaje);
 

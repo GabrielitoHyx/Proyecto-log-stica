@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Registro.css";
+import api from "../services/api";
 
 function Registro() {
   const navigate = useNavigate();
@@ -32,28 +33,13 @@ function Registro() {
     setCargando(true);
 
     try {
-      const respuesta = await fetch(
-        "http://localhost:5000/api/users",
+      const datos = await api(
+        "/api/users",
         {
           method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          credentials: "include",
-
           body: JSON.stringify(formulario)
         }
       );
-
-      const datos = await respuesta.json();
-
-      if (!respuesta.ok) {
-        throw new Error(
-          datos.error || "Error al registrar usuario"
-        );
-      }
 
       setMensaje("Usuario registrado correctamente");
 

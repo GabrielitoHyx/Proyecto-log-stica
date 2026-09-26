@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
+import api from "../services/api";
 
 function Camiones() {
 
@@ -18,45 +19,31 @@ function Camiones() {
   // OBTENER CAMIONES
   // ==========================
 
-  useEffect(() => {
+useEffect(() => {
 
-    const obtenerCamiones = async () => {
+  const obtenerCamiones = async () => {
 
-      try {
+    try {
 
-        const respuesta = await fetch(
-          "http://localhost:5000/api/vcamiones",
-          {
-            credentials: "include"
-          }
-        );
+      const datos = await api("/api/vcamiones");
+      setCamiones(datos);
 
-        const datos = await respuesta.json();
+    } catch (error) {
 
-        if (!respuesta.ok) {
-          throw new Error(
-            datos.error || "Error al obtener camiones"
-          );
-        }
+      console.error(error);
+      setError(error.message);
 
-        setCamiones(datos);
+    } finally {
 
-      } catch (error) {
+      setCargando(false);
 
-        console.error(error);
-        setError(error.message);
+    }
 
-      } finally {
+  };
 
-        setCargando(false);
+  obtenerCamiones();
 
-      }
-
-    };
-
-    obtenerCamiones();
-
-  }, []);
+}, []);
 
 
   // ==========================

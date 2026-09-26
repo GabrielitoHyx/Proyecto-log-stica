@@ -6,26 +6,13 @@ function LogoutButton() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
+  const cerrarSesion = () => {
 
-  const cerrarSesion = async () => {
+    logout();
 
-    try {
-
-      await logout();
-
-      navigate("/");
-
-    } catch (error) {
-
-      console.error(
-        "Error al cerrar sesión:",
-        error
-      );
-
-    }
+    navigate("/");
 
   };
-
 
   return (
     <button onClick={cerrarSesion}>

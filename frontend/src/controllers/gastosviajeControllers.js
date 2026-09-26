@@ -19,7 +19,7 @@ export const registerGastoViaje = async (req, res) => {
       });
     }
 
-    const idUsuario = req.session.user.id;
+    const idUsuario = req.user.id;
 
     const pool = await getConnection();
 

@@ -330,7 +330,7 @@ export const updateEstadoViaje = async (req, res) => {
       });
     }
 
-    const idUsuario = req.session.user.id;
+    const idUsuario = req.user.id;
 
     const filasActualizadas = await actualizarEstadoViaje(
       id,

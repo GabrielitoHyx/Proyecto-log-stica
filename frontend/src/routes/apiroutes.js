@@ -1,10 +1,11 @@
-import { Router } from 'express';
-import { validarCliente } from '../validator/clientesValidator.js';
-import { getUsers, registerUser,login,logout,getSession,getRecoveryQuestion,changePassword } from '../controllers/usersControllers.js';
-import {getCamiones,registerCamion} from '../controllers/camionesControllers.js';
-import {getChofer,getChoferes,registerChofer,  getUsuariosDisponiblesChofer} from '../controllers/choferControllers.js';
-import { getClientes,getCliente,registerCliente,getUsuariosDisponiblesCliente,cambiarEstadoCliente,actualizarClienteController }
- from '../controllers/clientesControllers.js';
+import {
+  getUsers,
+  registerUser,
+  login,
+  getSession,
+  getRecoveryQuestion,
+  changePassword
+} from '../controllers/usersControllers.js';
 
 
 import {getViaje,getViajes,registerViaje,getMisViajesChofer,updateEstadoViaje} from '../controllers/viajesControllers.js';
@@ -16,11 +17,16 @@ import {requireAuth,  requireRole} from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/users', getUsers);       //tomar todos los usuarios
+// Solo el admin puede ver todos los usuarios
+router.get(
+  '/users',
+  requireRole('Admin'),
+  getUsers
+);
+
 router.post('/users', registerUser);  //registrar usuario
 
 router.post('/login',login);
-router.post('/logout',logout);
 router.get('/session',getSession);
 router.post('/recuperar', getRecoveryQuestion);
 router.post('/cambiar-password', changePassword);
@@ -61,12 +67,6 @@ router.get(
   '/usuarios-choferes',
   requireRole('Admin'),
   getUsuariosDisponiblesChofer
-);
-
-router.post(
-  '/rchoferes',
-  requireRole('Admin'),
-  registerChofer
 );
 
 ///////////////viajes
@@ -144,12 +144,12 @@ router.post(
 // RUTA DE PRUEBA
 router.get(
   '/admin-test',
-  requireRole('Cliente','Admin'),
+  requireRole('Cliente', 'Admin'),
   (req, res) => {
 
     res.json({
       mensaje: 'Tienes acceso de cliente',
-      usuario: req.session.user
+      usuario: req.user
     });
 
   }
