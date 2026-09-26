@@ -1,3 +1,7 @@
+import { Router } from 'express';
+
+import { validarCliente } from '../validator/clientesValidator.js';
+
 import {
   getUsers,
   registerUser,
@@ -7,13 +11,43 @@ import {
   changePassword
 } from '../controllers/usersControllers.js';
 
+import {
+  getCamiones,
+  registerCamion
+} from '../controllers/camionesControllers.js';
 
-import {getViaje,getViajes,registerViaje,getMisViajesChofer,updateEstadoViaje} from '../controllers/viajesControllers.js';
+import {
+  getChofer,
+  getChoferes,
+  registerChofer,
+  getUsuariosDisponiblesChofer
+} from '../controllers/choferControllers.js';
 
-import {registerGastoViaje} from '../controllers/gastosviajeControllers.js'
+import {
+  getClientes,
+  getCliente,
+  registerCliente,
+  getUsuariosDisponiblesCliente,
+  cambiarEstadoCliente,
+  actualizarClienteController
+} from '../controllers/clientesControllers.js';
 
+import {
+  getViaje,
+  getViajes,
+  registerViaje,
+  getMisViajesChofer,
+  updateEstadoViaje
+} from '../controllers/viajesControllers.js';
 
-import {requireAuth,  requireRole} from '../middleware/auth.js';
+import {
+  registerGastoViaje
+} from '../controllers/gastosviajeControllers.js';
+
+import {
+  requireAuth,
+  requireRole
+} from '../middleware/auth.js';
 
 const router = Router();
 
