@@ -1,11 +1,16 @@
 import { Router } from 'express';
+import { validarCliente } from '../validator/clientesValidator.js';
 import { getUsers, registerUser,login,logout,getSession,getRecoveryQuestion,changePassword } from '../controllers/usersControllers.js';
 import {getCamiones,registerCamion} from '../controllers/camionesControllers.js';
 import {getChofer,getChoferes,registerChofer,  getUsuariosDisponiblesChofer} from '../controllers/choferControllers.js';
-import { getClientes,getCliente,registerCliente,getUsuariosDisponiblesCliente } from '../controllers/clientesControllers.js';
+import { getClientes,getCliente,registerCliente,getUsuariosDisponiblesCliente,cambiarEstadoCliente,actualizarClienteController }
+ from '../controllers/clientesControllers.js';
+
+
 import {getViaje,getViajes,registerViaje,getMisViajesChofer,updateEstadoViaje} from '../controllers/viajesControllers.js';
 
 import {registerGastoViaje} from '../controllers/gastosviajeControllers.js'
+
 
 import {requireAuth,  requireRole} from '../middleware/auth.js';
 
@@ -98,16 +103,21 @@ router.patch(
 //////////////CLIENTES
 
 
-router.get(
-  '/vclientes',
+router.get('/vclientes', requireRole('Admin'), getClientes);
+
+router.get('/vclientes/:id', requireRole('Admin'), getCliente);
+
+router.patch(
+  '/clientes/:id/estado',
   requireRole('Admin'),
-  getClientes
+  cambiarEstadoCliente
 );
 
-router.get(
-  '/vclientes/:id', ////CLIENTE en especifico
+router.patch(
+  '/clientes/:id',
   requireRole('Admin'),
-  getCliente
+  validarCliente,
+  actualizarClienteController
 );
 
 router.get(
@@ -119,9 +129,9 @@ router.get(
 router.post(
   '/rclientes',
   requireRole('Admin'),
+  validarCliente,
   registerCliente
 );
-
 
 //////gastos viajes
 

@@ -1,0 +1,123 @@
+.registro-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    rgba(0, 60, 120, 0.75),
+    rgba(0, 30, 70, 0.85)
+  );
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.registro-card {
+  width: 420px;
+  padding: 35px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.registro-card h1 {
+  text-align: center;
+  color: #07579e;
+  font-size: 38px;
+  line-height: 1.2;
+  margin: 0 0 25px 0;
+}
+
+.registro-card label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.registro-card input,
+.registro-card select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 15px;
+  background: white;
+}
+
+.registro-card input:focus,
+.registro-card select:focus {
+  outline: none;
+  border-color: #0875c9;
+  box-shadow: 0 0 0 2px rgba(8, 117, 201, 0.1);
+}
+
+.registro-card select {
+  cursor: pointer;
+}
+
+/* Botón Registrar */
+
+.registro-card form > button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 25px;
+  border: none;
+  border-radius: 8px;
+  background: #0875c9;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.registro-card form > button:hover {
+  background: #07579e;
+}
+
+.registro-card form > button:disabled {
+  background: #8bb9d8;
+  cursor: not-allowed;
+}
+
+/* Mensaje de error */
+
+.registro-error {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #ffe5e5;
+  color: #c62828;
+  text-align: center;
+}
+
+/* Mensaje de éxito */
+
+.registro-mensaje {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #e4f7e8;
+  color: #218838;
+  text-align: center;
+}
+
+/* Botón regresar */
+
+.volver-login {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: #07579e;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.volver-login:hover {
+  text-decoration: underline;
+}

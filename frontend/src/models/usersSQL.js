@@ -31,19 +31,18 @@ export const getAllUsers = async () => {
 };
 
 
-export const getUserByEmail = async (correo) => {
-
-  const pool = await getConnection();
-
-  const result = await pool.request()
-    .input('correo', correo)
-    .query(`
-      SELECT *
-      FROM l.Usuario
-      WHERE Correo = @correo
-    `);
-
-  return result.recordset[0];
+export const getUserByEmail = async (correo) => { 
+  const pool = await getConnection(); 
+  const result = await pool.request() 
+  .input('correo', correo)
+   .query(`
+     SELECT u.*, c.Estado AS EstadoCliente FROM l.Usuario
+     u LEFT JOIN l.Cliente c ON u.ID_Usuario = c.ID_Usuario
+    WHERE u.Correo = @correo 
+    `); 
+       
+    return result.recordset[0];
+  
 };
 
 export const updatePassword = async (idUsuario, passwordHash) => {
