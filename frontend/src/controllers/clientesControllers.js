@@ -1,7 +1,9 @@
-import {getAllClientes,getClienteById,createCliente,getUsuariosClientesDisponibles} from '../models/clientesSQL.js';
+import {getAllClientes,getClienteById,createCliente,getUsuariosClientesDisponibles,actualizarEstadoCliente,actualizarCliente} 
+from '../models/clientesSQL.js';
+
+//import { validarCliente } from '../validator/clientesValidator.js';
 
 import { getUserByEmail } from '../models/usersSQL.js';
-
 
 // OBTENER TODOS LOS CLIENTES
 export const getClientes = async (req, res) => {
@@ -139,5 +141,88 @@ export const getUsuariosDisponiblesCliente = async (req, res) => {
       error: error.message
     });
 
+  }
+};
+
+
+// CAMBIAR ESTADO DEL CLIENTE
+export const cambiarEstadoCliente = async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+    const { estado } = req.body;
+
+
+    // Validar que sea true o false
+    if (typeof estado !== 'boolean') {
+
+      return res.status(400).json({
+        error: 'El estado debe ser true o false'
+      });
+
+    }
+
+
+    const filasAfectadas = await actualizarEstadoCliente(
+      id,
+      estado
+    );
+
+
+    if (filasAfectadas === 0) {
+
+      return res.status(404).json({
+        error: 'Cliente no encontrado'
+      });
+
+    }
+
+
+    res.json({
+
+      mensaje: estado
+        ? 'Cliente reactivado correctamente'
+        : 'Cliente dado de baja correctamente',
+
+      estado
+
+    });
+
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: error.message
+    });
+
+  }
+};
+
+export const actualizarClienteController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, telefono } = req.body;
+
+    const filasAfectadas = await actualizarCliente(
+      id,
+      nombre,
+      telefono
+    );
+
+    if (filasAfectadas === 0) {
+      return res.status(404).json({
+        error: 'Cliente no encontrado'
+      });
+    }
+
+    res.json({
+      mensaje: 'Cliente actualizado correctamente'
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
   }
 };

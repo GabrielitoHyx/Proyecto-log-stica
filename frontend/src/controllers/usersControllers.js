@@ -1,5 +1,5 @@
 import { createUser, getAllUsers, getUserByEmail,updatePassword } from '../models/usersSQL.js';
-import { validateUser } from '../models/validator.js';
+import { validateUser } from '../validator/validator.js';
 
 import bcrypt from 'bcrypt';
 
@@ -83,6 +83,13 @@ export const login = async (req, res) => {
         error: 'Correo o contraseña incorrectos'
       });
     }
+
+    // COMPROBAR SI UN CLIENTE ESTÁ ACTIVO 
+    if ( usuario.Rol === 'Cliente' && usuario.EstadoCliente === false ) {
+       return res.status(403).json({ 
+        error: 'El cliente está dado de baja y no puede iniciar sesión' 
+      });
+     }
 
     req.session.user = {
       id: usuario.ID_Usuario,
