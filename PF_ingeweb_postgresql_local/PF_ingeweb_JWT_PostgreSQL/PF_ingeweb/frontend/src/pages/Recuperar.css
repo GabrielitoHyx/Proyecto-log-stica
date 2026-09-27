@@ -1,0 +1,123 @@
+.recuperar-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    rgba(0, 60, 120, 0.75),
+    rgba(0, 30, 70, 0.85)
+  );
+}
+
+.recuperar-card {
+  width: 420px;
+  padding: 35px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.recuperar-card h1 {
+  text-align: center;
+  color: #07579e;
+  font-size: 42px;
+  line-height: 1.2;
+  margin: 0 0 20px 0;
+}
+
+.recuperar-descripcion {
+  text-align: center;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.recuperar-card label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 6px;
+  font-weight: bold;
+  color: #333;
+}
+
+.recuperar-card input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+.recuperar-card input:focus {
+  outline: none;
+  border-color: #0875c9;
+}
+
+.recuperar-card form > button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 22px;
+  border: none;
+  border-radius: 8px;
+  background: #0875c9;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.recuperar-card form > button:hover {
+  background: #07579e;
+}
+
+.pregunta-box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #eef6ff;
+  border-left: 4px solid #0875c9;
+  border-radius: 6px;
+}
+
+.pregunta-box label {
+  margin-top: 0;
+  color: #07579e;
+}
+
+.pregunta-box p {
+  margin-bottom: 0;
+  color: #333;
+}
+
+.recuperar-error {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #ffe5e5;
+  color: #c62828;
+  text-align: center;
+}
+
+.recuperar-mensaje {
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #e4f7e8;
+  color: #218838;
+  text-align: center;
+}
+
+.volver-login {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: #07579e;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.volver-login:hover {
+  text-decoration: underline;
+}
