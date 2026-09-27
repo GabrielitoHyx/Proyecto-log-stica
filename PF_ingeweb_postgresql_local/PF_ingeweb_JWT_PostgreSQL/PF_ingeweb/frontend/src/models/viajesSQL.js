@@ -413,23 +413,32 @@ export const createSolicitudViajeCliente = async (viaje) => {
 // ASIGNAR / REASIGNAR VIAJE DESDE ADMINISTRADOR
 // =====================================================
 
-export const asignarViaje = async (idViaje, idChofer, idCamion) => {
+export const asignarViaje = async (
+  idViaje,
+  idChofer,
+  idCamion
+) => {
 
   const result = await pool.query(
     `
     UPDATE public."Viaje"
     SET
-      "ID_cho" = $1,
-      "ID_ca" = $2,
+      "ID_cho" = $1::integer,
+      "ID_ca" = $2::integer,
       "Estado" =
         CASE
-          WHEN $1 IS NULL OR $2 IS NULL
+          WHEN $1::integer IS NULL
+            OR $2::integer IS NULL
           THEN 'Presupuesto'
+
           WHEN "Estado" IN ('Presupuesto', 'Programado')
           THEN 'Programado'
+
           ELSE "Estado"
         END
-    WHERE "ID_Viaje" = $3
+
+    WHERE "ID_Viaje" = $3::integer
+
     RETURNING
       "ID_Viaje",
       "Folio_ruta",
@@ -437,7 +446,11 @@ export const asignarViaje = async (idViaje, idChofer, idCamion) => {
       "ID_ca",
       "Estado";
     `,
-    [idChofer, idCamion, idViaje]
+    [
+      idChofer,
+      idCamion,
+      idViaje
+    ]
   );
 
   return result.rows[0];

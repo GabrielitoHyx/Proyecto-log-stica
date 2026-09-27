@@ -1,7 +1,17 @@
-import { getAllChoferes, getChoferById,createChofer, getUsuariosChoferesDisponibles} from '../models/choferSQL.js';
+import {
+  getAllChoferes,
+  getChoferById,
+  createChofer,
+  getUsuariosChoferesDisponibles
+} from '../models/choferSQL.js';
+
 import { getUserByEmail } from '../models/usersSQL.js';
 
-// Obtener todos los choferes
+
+// ==========================================
+// OBTENER TODOS LOS CHOFERES
+// ==========================================
+
 export const getChoferes = async (req, res) => {
 
   try {
@@ -21,7 +31,10 @@ export const getChoferes = async (req, res) => {
 };
 
 
-// Obtener un chofer
+// ==========================================
+// OBTENER UN CHOFER
+// ==========================================
+
 export const getChofer = async (req, res) => {
 
   try {
@@ -31,9 +44,11 @@ export const getChofer = async (req, res) => {
     const chofer = await getChoferById(id);
 
     if (!chofer) {
+
       return res.status(404).json({
         error: 'Chofer no encontrado'
       });
+
     }
 
     res.json(chofer);
@@ -49,7 +64,10 @@ export const getChofer = async (req, res) => {
 };
 
 
-// Registrar chofer
+// ==========================================
+// REGISTRAR CHOFER
+// ==========================================
+
 export const registerChofer = async (req, res) => {
 
   try {
@@ -64,54 +82,184 @@ export const registerChofer = async (req, res) => {
     } = req.body;
 
 
-    // Validar datos básicos
-    if (!correo || !nombre || !licencia) {
+    // ==========================================
+    // VALIDAR CAMPOS OBLIGATORIOS
+    // ==========================================
+
+    if (
+      !correo ||
+      !nss ||
+      !nombre ||
+      !licencia ||
+      edad === undefined ||
+      edad === null ||
+      !sexo
+    ) {
+
       return res.status(400).json({
-        error: 'Correo, nombre y licencia son obligatorios'
+        error: 'Todos los campos son obligatorios'
       });
+
     }
 
 
-    // Buscar usuario mediante el correo
+    // ==========================================
+    // VALIDAR NSS
+    // Exactamente 11 dígitos
+    // ==========================================
+
+    const nssTexto = String(nss).trim();
+
+    if (!/^\d{11}$/.test(nssTexto)) {
+
+      return res.status(400).json({
+        error: 'El NSS debe contener exactamente 11 dígitos'
+      });
+
+    }
+
+
+    // ==========================================
+    // VALIDAR NOMBRE
+    // Más de 3 caracteres
+    // ==========================================
+
+    const nombreTexto = String(nombre).trim();
+
+    if (nombreTexto.length <= 3) {
+
+      return res.status(400).json({
+        error: 'El nombre debe tener más de 3 caracteres'
+      });
+
+    }
+
+
+    // ==========================================
+    // VALIDAR LICENCIA
+    // Exactamente 12 caracteres
+    // ==========================================
+
+    const licenciaTexto = String(licencia).trim();
+
+    if (licenciaTexto.length !== 12) {
+
+      return res.status(400).json({
+        error: 'La licencia debe contener exactamente 12 caracteres'
+      });
+
+    }
+
+
+    // ==========================================
+    // VALIDAR EDAD
+    // Mayor de 18 años
+    // ==========================================
+
+    const edadNumero = Number(edad);
+
+    if (
+      !Number.isInteger(edadNumero) ||
+      edadNumero <= 18
+    ) {
+
+      return res.status(400).json({
+        error: 'La edad debe ser un número entero mayor de 18 años'
+      });
+
+    }
+
+
+    // ==========================================
+    // VALIDAR SEXO
+    // Únicamente M o F
+    // ==========================================
+
+    const sexoNormalizado = String(sexo)
+      .trim()
+      .toUpperCase();
+
+    if (
+      sexoNormalizado !== 'M' &&
+      sexoNormalizado !== 'F'
+    ) {
+
+      return res.status(400).json({
+        error: 'El sexo debe ser M o F'
+      });
+
+    }
+
+
+    // ==========================================
+    // BUSCAR USUARIO POR CORREO
+    // ==========================================
+
     const usuario = await getUserByEmail(correo);
 
 
     if (!usuario) {
+
       return res.status(404).json({
         error: 'No existe un usuario con ese correo'
       });
+
     }
 
 
-    // Verificar que el usuario tenga rol Chofer
+    // ==========================================
+    // COMPROBAR QUE SEA USUARIO CHOFER
+    // ==========================================
+
     if (usuario.Rol !== 'Chofer') {
+
       return res.status(400).json({
         error: 'El usuario seleccionado no tiene rol de Chofer'
       });
+
     }
 
 
-    // Crear el chofer usando el ID obtenido del backend
+    // ==========================================
+    // CREAR REGISTRO DEL CHOFER
+    // ==========================================
+
     const id = await createChofer({
 
       id_usuario: usuario.ID_Usuario,
 
-      nss,
-      nombre,
-      licencia,
-      edad,
-      sexo
+      nss: nssTexto,
+
+      nombre: nombreTexto,
+
+      licencia: licenciaTexto,
+
+      edad: edadNumero,
+
+      sexo: sexoNormalizado
 
     });
 
 
+    // ==========================================
+    // RESPUESTA
+    // ==========================================
+
     res.status(201).json({
+
       mensaje: 'Chofer registrado correctamente',
+
       id
+
     });
 
 
   } catch (error) {
+
+    console.error(
+      'Error al registrar chofer:',
+      error
+    );
 
     res.status(500).json({
       error: error.message
@@ -121,11 +269,17 @@ export const registerChofer = async (req, res) => {
 
 };
 
+
+// ==========================================
+// OBTENER USUARIOS CHOFER DISPONIBLES
+// ==========================================
+
 export const getUsuariosDisponiblesChofer = async (req, res) => {
 
   try {
 
-    const usuarios = await getUsuariosChoferesDisponibles();
+    const usuarios =
+      await getUsuariosChoferesDisponibles();
 
     res.json(usuarios);
 

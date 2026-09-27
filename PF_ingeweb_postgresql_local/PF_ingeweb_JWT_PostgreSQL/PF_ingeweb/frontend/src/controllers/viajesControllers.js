@@ -205,7 +205,6 @@ export const registerViaje = async (req, res) => {
 
     // ==========================================
     // CREAR VIAJE
-    // PostgreSQL genera automáticamente Folio_ruta
     // ==========================================
 
     const viaje = await createViaje({
@@ -243,38 +242,71 @@ export const registerViaje = async (req, res) => {
   }
 };
 
-
 // =====================================================
 // ASIGNAR / REASIGNAR VIAJE DESDE ADMINISTRADOR
 // =====================================================
 
 export const asignarViajeAdmin = async (req, res) => {
   try {
+
     const { id } = req.params;
     const { id_cho, id_ca } = req.body;
 
-    const idChofer = id_cho === null || id_cho === "" || id_cho === undefined
-      ? null
-      : Number(id_cho);
 
-    const idCamion = id_ca === null || id_ca === "" || id_ca === undefined
-      ? null
-      : Number(id_ca);
+    // ==========================================
+    // CONVERTIR IDs
+    // ==========================================
 
-    if ((idChofer !== null && Number.isNaN(idChofer)) ||
-        (idCamion !== null && Number.isNaN(idCamion))) {
+    const idChofer =
+      id_cho === null ||
+      id_cho === "" ||
+      id_cho === undefined
+        ? null
+        : Number(id_cho);
+
+    const idCamion =
+      id_ca === null ||
+      id_ca === "" ||
+      id_ca === undefined
+        ? null
+        : Number(id_ca);
+
+
+    // ==========================================
+    // VALIDAR IDs
+    // ==========================================
+
+    if (
+      (idChofer !== null && Number.isNaN(idChofer)) ||
+      (idCamion !== null && Number.isNaN(idCamion))
+    ) {
       return res.status(400).json({
         error: 'El chofer o camión seleccionado no es válido'
       });
     }
 
-    if ((idChofer === null) !== (idCamion === null)) {
+
+    // ==========================================
+    // VALIDAR QUE AMBOS SE ASIGNEN
+    // ==========================================
+
+    if (
+      (idChofer === null) !==
+      (idCamion === null)
+    ) {
       return res.status(400).json({
-        error: 'Debes asignar un chofer y un camión, o retirar ambos'
+        error:
+          'Debes asignar un chofer y un camión, o retirar ambos'
       });
     }
 
+
+    // ==========================================
+    // VALIDAR CHOFER
+    // ==========================================
+
     if (idChofer !== null) {
+
       const choferResult = await pool.query(
         `
         SELECT "ID_Chof"
@@ -284,6 +316,7 @@ export const asignarViajeAdmin = async (req, res) => {
         [idChofer]
       );
 
+
       if (choferResult.rows.length === 0) {
         return res.status(404).json({
           error: 'El chofer seleccionado no existe'
@@ -291,7 +324,13 @@ export const asignarViajeAdmin = async (req, res) => {
       }
     }
 
+
+    // ==========================================
+    // VALIDAR CAMIÓN
+    // ==========================================
+
     if (idCamion !== null) {
+
       const camionResult = await pool.query(
         `
         SELECT "ID_CA"
@@ -301,6 +340,7 @@ export const asignarViajeAdmin = async (req, res) => {
         [idCamion]
       );
 
+
       if (camionResult.rows.length === 0) {
         return res.status(404).json({
           error: 'El camión seleccionado no existe'
@@ -308,7 +348,21 @@ export const asignarViajeAdmin = async (req, res) => {
       }
     }
 
-    const viaje = await asignarViaje(id, idChofer, idCamion);
+
+    // ==========================================
+    // ASIGNAR VIAJE
+    // ==========================================
+
+    const viaje = await asignarViaje(
+      id,
+      idChofer,
+      idCamion
+    );
+
+
+    // ==========================================
+    // VALIDAR VIAJE
+    // ==========================================
 
     if (!viaje) {
       return res.status(404).json({
@@ -316,15 +370,26 @@ export const asignarViajeAdmin = async (req, res) => {
       });
     }
 
+
+    // ==========================================
+    // RESPUESTA
+    // ==========================================
+
     res.json({
-      mensaje: idChofer === null
-        ? 'Asignación retirada correctamente'
-        : 'Viaje asignado correctamente',
+      mensaje:
+        idChofer === null
+          ? 'Asignación retirada correctamente'
+          : 'Viaje asignado correctamente',
       viaje
     });
 
+
   } catch (error) {
-    console.error('Error al asignar viaje:', error);
+
+    console.error(
+      'Error al asignar viaje:',
+      error
+    );
 
     res.status(500).json({
       error: error.message

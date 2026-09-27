@@ -1,45 +1,92 @@
 import { Router } from 'express';
-import { getUsers, registerUser,login,getSession,getRecoveryQuestion,changePassword } from '../controllers/usersControllers.js';
-import {getCamiones,registerCamion} from '../controllers/camionesControllers.js';
-import {getChofer,getChoferes,registerChofer,  getUsuariosDisponiblesChofer} from '../controllers/choferControllers.js';
-import { getClientes,getCliente,registerCliente,getUsuariosDisponiblesCliente } from '../controllers/clientesControllers.js';
-import {getViaje,getViajes,registerViaje,getMisViajesChofer,getMisViajesCliente,solicitarViajeCliente,updateEstadoViaje} from '../controllers/viajesControllers.js';
 
-import {registerGastoViaje} from '../controllers/gastosviajeControllers.js'
+import {getUsers,registerUser,login,getSession,getRecoveryQuestion,changePassword
+} from '../controllers/usersControllers.js';
 
-import {requireAuth,  requireRole} from '../middleware/auth.js';
+import {getCamiones,registerCamion
+} from '../controllers/camionesControllers.js';
+
+import {getChofer,getChoferes,registerChofer,getUsuariosDisponiblesChofer
+} from '../controllers/choferControllers.js';
+
+import {getClientes,getCliente,registerCliente,getUsuariosDisponiblesCliente
+} from '../controllers/clientesControllers.js';
+
+import {getViaje,getViajes,registerViaje,getMisViajesChofer,getMisViajesCliente,solicitarViajeCliente,updateEstadoViaje,asignarViajeAdmin
+} from '../controllers/viajesControllers.js';
+
+import {registerGastoViaje
+} from '../controllers/gastosviajeControllers.js';
+
+import {requireAuth,requireRole
+} from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/users', getUsers);       //tomar todos los usuarios
-router.post('/users', registerUser);  //registrar usuario
 
-router.post('/login',login);
-router.get('/session',getSession);
-router.post('/recuperar', getRecoveryQuestion);
-router.post('/cambiar-password', changePassword);
+// =====================================================
+// USUARIOS
+// =====================================================
+
+router.get(
+  '/users',
+  getUsers
+);
+
+router.post(
+  '/users',
+  registerUser
+);
+
+router.post(
+  '/login',
+  login
+);
+
+router.get(
+  '/session',
+  getSession
+);
+
+router.post(
+  '/recuperar',
+  getRecoveryQuestion
+);
+
+router.post(
+  '/cambiar-password',
+  changePassword
+);
 
 
-//rutacamiones
-router.get('/vcamiones',
+// =====================================================
+// CAMIONES
+// =====================================================
+
+router.get(
+  '/vcamiones',
   requireRole('Admin'),
   getCamiones
 );
 
-
-router.post('/rcamiones',
+router.post(
+  '/rcamiones',
   requireRole('Admin'),
   registerCamion
 );
 
-//RUTA CHOFERES
+
+// =====================================================
+// CHOFERES
+// =====================================================
+
 router.get(
   '/vchoferes',
   requireRole('Admin'),
   getChoferes
 );
 
-router.get( //obtener un chofer en especifico
+router.get(
   '/vchoferes/:id',
   requireRole('Admin'),
   getChofer
@@ -57,13 +104,11 @@ router.get(
   getUsuariosDisponiblesChofer
 );
 
-router.post(
-  '/rchoferes',
-  requireRole('Admin'),
-  registerChofer
-);
 
-///////////////viajes
+// =====================================================
+// VIAJES
+// =====================================================
+
 router.get(
   '/vviajes',
   requireRole('Admin'),
@@ -71,7 +116,7 @@ router.get(
 );
 
 router.get(
-  '/vviajes/:id', //viaje en especifico
+  '/vviajes/:id',
   requireRole('Admin'),
   getViaje
 );
@@ -82,7 +127,7 @@ router.post(
   registerViaje
 );
 
-router.get( //viaje por chofer
+router.get(
   '/mis-viajes',
   requireRole('Chofer'),
   getMisViajesChofer
@@ -106,8 +151,17 @@ router.patch(
   updateEstadoViaje
 );
 
-//////////////CLIENTES
+// Asignar chofer y camión a un viaje
+router.patch(
+  '/viajes/:id/asignacion',
+  requireRole('Admin'),
+  asignarViajeAdmin
+);
 
+
+// =====================================================
+// CLIENTES
+// =====================================================
 
 router.get(
   '/vclientes',
@@ -116,7 +170,7 @@ router.get(
 );
 
 router.get(
-  '/vclientes/:id', ////CLIENTE en especifico
+  '/vclientes/:id',
   requireRole('Admin'),
   getCliente
 );
@@ -134,7 +188,9 @@ router.post(
 );
 
 
-//////gastos viajes
+// =====================================================
+// GASTOS DE VIAJE
+// =====================================================
 
 router.post(
   '/gastos-viaje',
@@ -142,18 +198,21 @@ router.post(
   registerGastoViaje
 );
 
+
+// =====================================================
 // RUTA DE PRUEBA
+// =====================================================
+
 router.get(
   '/admin-test',
-  requireRole('Cliente','Admin'),
+  requireRole('Cliente', 'Admin'),
   (req, res) => {
-
     res.json({
       mensaje: 'Tienes acceso de cliente',
       usuario: req.user
     });
-
   }
 );
+
 
 export default router;
