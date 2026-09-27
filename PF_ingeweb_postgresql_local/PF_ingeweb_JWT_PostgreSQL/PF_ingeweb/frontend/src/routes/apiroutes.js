@@ -3,7 +3,7 @@ import { Router } from 'express';
 import {getUsers,registerUser,login,getSession,getRecoveryQuestion,changePassword
 } from '../controllers/usersControllers.js';
 
-import {getCamiones,registerCamion
+import {getCamiones,registerCamion, updateCamionController
 } from '../controllers/camionesControllers.js';
 
 import {getChofer,getChoferes,registerChofer,getUsuariosDisponiblesChofer
@@ -75,6 +75,11 @@ router.post(
   registerCamion
 );
 
+router.put(
+  '/ecamiones/:id',
+  requireRole('Admin'),
+  updateCamionController
+);
 
 // =====================================================
 // CHOFERES

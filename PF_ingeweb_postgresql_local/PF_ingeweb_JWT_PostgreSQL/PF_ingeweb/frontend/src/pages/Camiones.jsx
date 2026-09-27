@@ -25,6 +25,9 @@ function Camiones() {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
 
+  const camionesRef = useRef([]);
+  const [camionEditandoId, setCamionEditandoId] = useState(null);
+
   useEffect(() => {
     if (!tablaRef.current) return;
 
@@ -32,10 +35,8 @@ function Camiones() {
       ajax: async function (_data, callback) {
         try {
           const datos = await api("/api/vcamiones");
-
-          callback({
-            data: Array.isArray(datos) ? datos : []
-          });
+          camionesRef.current = Array.isArray(datos) ? datos : [];
+          callback({ data: camionesRef.current });
         } catch (error) {
           console.error("Error DataTables:", error);
 
@@ -91,7 +92,15 @@ function Camiones() {
             data !== ""
               ? `${data} Ton`
               : "—"
+        },
+        {
+          data: null,
+          title: "Acciones",
+          orderable: false,
+          render: (data) =>
+            `<button type="button" class="btn-editar-camion" data-id="${data.ID_CA}">Editar</button>`
         }
+
       ],
 
       language: {
@@ -121,8 +130,42 @@ function Camiones() {
     };
   }, []);
 
+  useEffect(() => {
+    const tabla = tablaRef.current;
+    if (!tabla) return;
+
+    const manejarClickTabla = (evento) => {
+      const boton = evento.target.closest(".btn-editar-camion");
+      if (!boton) return;
+
+      const camion = camionesRef.current.find(
+        (c) => String(c.ID_CA) === String(boton.dataset.id)
+      );
+
+      if (camion) abrirFormularioEdicion(camion);
+    };
+
+    tabla.addEventListener("click", manejarClickTabla);
+    return () => tabla.removeEventListener("click", manejarClickTabla);
+  }, []);
+
   const abrirFormulario = () => {
     setFormulario(formularioInicial);
+    setCamionEditandoId(null);
+    setError("");
+    setMensaje("");
+    setMostrarFormulario(true);
+  };
+
+  const abrirFormularioEdicion = (camion) => {
+    setFormulario({
+      Placas: camion.Placas || "",
+      Modelo: camion.Modelo || "",
+      Kilometraje_total: camion.Kilometraje_total ?? "",
+      Capacidad_tanque: camion.Capacidad_tanque ?? "",
+      Capacidad_carga: camion.Capacidad_carga ?? ""
+    });
+    setCamionEditandoId(camion.ID_CA);
     setError("");
     setMensaje("");
     setMostrarFormulario(true);
@@ -131,6 +174,7 @@ function Camiones() {
   const cerrarFormulario = () => {
     setMostrarFormulario(false);
     setFormulario(formularioInicial);
+    setCamionEditandoId(null);
     setError("");
   };
 
@@ -199,35 +243,46 @@ function Camiones() {
 
     setCargando(true);
 
+    const payload = {
+      Placas: formulario.Placas.trim(),
+      Modelo: formulario.Modelo.trim(),
+
+      Kilometraje_total:
+        formulario.Kilometraje_total === ""
+          ? null
+          : Number(formulario.Kilometraje_total),
+
+      Capacidad_tanque:
+        formulario.Capacidad_tanque === ""
+          ? null
+          : Number(formulario.Capacidad_tanque),
+
+      Capacidad_carga:
+        formulario.Capacidad_carga === ""
+          ? null
+          : Number(formulario.Capacidad_carga)
+    };
+
     try {
-      const datos = await api("/api/rcamiones", {
-        method: "POST",
-        body: JSON.stringify({
-          Placas: formulario.Placas.trim(),
-          Modelo: formulario.Modelo.trim(),
-
-          Kilometraje_total:
-            formulario.Kilometraje_total === ""
-              ? null
-              : Number(formulario.Kilometraje_total),
-
-          Capacidad_tanque:
-            formulario.Capacidad_tanque === ""
-              ? null
-              : Number(formulario.Capacidad_tanque),
-
-          Capacidad_carga:
-            formulario.Capacidad_carga === ""
-              ? null
-              : Number(formulario.Capacidad_carga)
-        })
-      });
+      const datos = camionEditandoId
+        ? await api(`/api/ecamiones/${camionEditandoId}`, {
+            method: "PUT",
+            body: JSON.stringify(payload)
+          })
+        : await api("/api/rcamiones", {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
 
       setMensaje(
-        datos.mensaje || "Camión registrado correctamente."
+        datos.mensaje ||
+        (camionEditandoId
+          ? "Camión actualizado correctamente."
+          : "Camión registrado correctamente.")
       );
 
       setFormulario(formularioInicial);
+      setCamionEditandoId(null);
 
       if (tablaInstancia.current) {
         tablaInstancia.current.ajax.reload(null, false);
@@ -243,7 +298,9 @@ function Camiones() {
 
       setError(
         error.message ||
-        "No se pudo registrar el camión."
+        (camionEditandoId
+          ? "No se pudo actualizar el camión."
+          : "No se pudo registrar el camión.")
       );
 
     } finally {
@@ -320,6 +377,7 @@ function Camiones() {
               <th>Kilometraje</th>
               <th>Tanque</th>
               <th>Capacidad de carga</th>
+              <th>Acciones</th>
             </tr>
           </thead>
 
@@ -336,7 +394,7 @@ function Camiones() {
           <div className="formulario-camion">
 
             <h2>
-              Registrar nuevo camión
+              {camionEditandoId ? "Editar camión" : "Registrar nuevo camión"}
             </h2>
 
             <form onSubmit={manejarSubmit}>
@@ -450,7 +508,9 @@ function Camiones() {
                 >
                   {cargando
                     ? "Guardando..."
-                    : "Guardar camión"}
+                    : camionEditandoId
+                      ? "Guardar cambios"
+                      : "Guardar camión"}
                 </button>
 
               </div>
