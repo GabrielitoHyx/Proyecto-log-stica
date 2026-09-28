@@ -10,6 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.env
+.env.*
+.sql
+vite.config.js 
 *.local
 
 # Editor directories and files

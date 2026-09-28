@@ -1,21 +1,36 @@
-//peticiones para guardar cookies
 const api = async (endpoint, options = {}) => {
+
+  const token = localStorage.getItem('token');
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+
+  // Agregar JWT automáticamente
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   const response = await fetch(endpoint, {
     ...options,
-
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers
-    },
-
-    credentials: 'include'
+    headers
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.error || 'Error en la petición');
+
+    // Si el token expiró o no es válido
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+    }
+
+    throw new Error(
+      data.error || 'Error en la petición'
+    );
+
   }
 
   return data;

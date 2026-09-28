@@ -1,5 +1,5 @@
 import { createGastoViaje } from '../models/gastosviajeSQL.js';
-import { getConnection } from '../config/sqlserver.js';
+import { getConnection } from '../config/postgres.js';
 
 export const registerGastoViaje = async (req, res) => {
 
@@ -19,25 +19,21 @@ export const registerGastoViaje = async (req, res) => {
       });
     }
 
-    const idUsuario = req.session.user.id;
+    const idUsuario = req.user.id;
 
-    const pool = await getConnection();
+    const pool = getConnection();
 
     // Verificar que el viaje pertenece al chofer
-    const result = await pool.request()
-      .input('id_viaje', id_viaje)
-      .input('id_usuario', idUsuario)
-      .query(`
-        SELECT v.ID_Viaje
-        FROM l.Viaje v
-        INNER JOIN l.Chofer ch
-          ON v.ID_cho = ch.ID_Chof
-        WHERE
-          v.ID_Viaje = @id_viaje
-          AND ch.ID_Usuario = @id_usuario
-      `);
+    const result = await pool.query(`
+      SELECT v."ID_Viaje"
+      FROM public."Viaje" v
+      INNER JOIN public."Chofer" ch
+        ON v."ID_cho" = ch."ID_Chof"
+      WHERE v."ID_Viaje" = $1
+        AND ch."ID_Usuario" = $2
+    `, [id_viaje, idUsuario]);
 
-    if (result.recordset.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(403).json({
         error: 'No puedes registrar gastos para este viaje'
       });

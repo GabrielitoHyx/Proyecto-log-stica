@@ -1,4 +1,32 @@
-node_modules/
-frontend/node_modules/
-dist/
+# Variables de entorno / secretos
 .env
+.env.*
+!.env.example
+
+# PostgreSQL / SQL locales
+*.sql
+
+# Dependencias de Node
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Builds
+dist/
+build/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# IDE / editores
+.vscode/
+.idea/
+
+# Archivos temporales
+*.tmp
+*.temp

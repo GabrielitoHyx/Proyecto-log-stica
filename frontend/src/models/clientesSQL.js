@@ -1,109 +1,67 @@
-import { getConnection } from '../config/sqlserver.js';
+import { getConnection } from '../config/postgres.js';
 
-// USUARIOS CON ROL CLIENTE QUE TODAVÍA NO ESTÁN REGISTRADOS EN LA TABLA CLIENTE
 export const getUsuariosClientesDisponibles = async () => {
-
-  const pool = await getConnection();
-
-  const result = await pool.request().query(`
-    SELECT
-      u.Correo
-    FROM l.Usuario u
-
-    LEFT JOIN l.Cliente c
-      ON u.ID_Usuario = c.ID_Usuario
-
-    WHERE u.Rol = 'Cliente'
-      AND c.ID_CLI IS NULL
-
-    ORDER BY u.Correo
+  const pool = getConnection();
+  const result = await pool.query(`
+    SELECT u."Correo"
+    FROM public."Usuario" u
+    LEFT JOIN public."Cliente" c ON u."ID_Usuario" = c."ID_Usuario"
+    WHERE u."Rol" = 'Cliente' AND c."ID_CLI" IS NULL
+    ORDER BY u."Correo";
   `);
-
-  return result.recordset;
+  return result.rows;
 };
 
-
-// OBTENER TODOS LOS CLIENTES
 export const getAllClientes = async () => {
-
-  const pool = await getConnection();
-
-  const result = await pool.request().query(`
-    SELECT
-      c.ID_CLI,
-      u.Correo,
-      c.Nombre,
-      c.Telefono
-
-    FROM l.Cliente c
-
-    INNER JOIN l.Usuario u
-      ON c.ID_Usuario = u.ID_Usuario
-
-    ORDER BY c.ID_CLI
+  const pool = getConnection();
+  const result = await pool.query(`
+    SELECT c."ID_CLI", u."Correo", c."Nombre", c."Telefono", c."Estado"
+    FROM public."Cliente" c
+    INNER JOIN public."Usuario" u ON c."ID_Usuario" = u."ID_Usuario"
+    ORDER BY c."ID_CLI";
   `);
-
-  return result.recordset;
+  return result.rows;
 };
 
-
-// OBTENER UN CLIENTE
 export const getClienteById = async (id) => {
-
-  const pool = await getConnection();
-
-  const result = await pool.request()
-    .input('id', id)
-    .query(`
-      SELECT
-        c.ID_CLI,
-        u.Correo,
-        c.Nombre,
-        c.Telefono
-
-      FROM l.Cliente c
-
-      INNER JOIN l.Usuario u
-        ON c.ID_Usuario = u.ID_Usuario
-
-      WHERE c.ID_CLI = @id
-    `);
-
-  return result.recordset[0];
+  const pool = getConnection();
+  const result = await pool.query(`
+    SELECT c."ID_CLI", u."Correo", c."Nombre", c."Telefono", c."Estado"
+    FROM public."Cliente" c
+    INNER JOIN public."Usuario" u ON c."ID_Usuario" = u."ID_Usuario"
+    WHERE c."ID_CLI" = $1;
+  `, [id]);
+  return result.rows[0];
 };
 
-
-// CREAR CLIENTE
 export const createCliente = async (cliente) => {
+  const { id_usuario, nombre, telefono } = cliente;
+  const pool = getConnection();
+  const result = await pool.query(`
+    INSERT INTO public."Cliente"
+      ("ID_Usuario", "Nombre", "Telefono", "Estado")
+    VALUES ($1, $2, $3, TRUE)
+    RETURNING "ID_CLI" AS id;
+  `, [id_usuario, nombre, telefono]);
+  return result.rows[0].id;
+};
 
-  const {
-    id_usuario,
-    nombre,
-    telefono
-  } = cliente;
+export const actualizarEstadoCliente = async (id, estado) => {
+  const pool = getConnection();
+  const result = await pool.query(`
+    UPDATE public."Cliente"
+    SET "Estado" = $1
+    WHERE "ID_CLI" = $2;
+  `, [estado, id]);
+  return result.rowCount;
+};
 
-  const pool = await getConnection();
-
-  const result = await pool.request()
-    .input('id_usuario', id_usuario)
-    .input('nombre', nombre)
-    .input('telefono', telefono)
-    .query(`
-      INSERT INTO l.Cliente
-      (
-        ID_Usuario,
-        Nombre,
-        Telefono
-      )
-      VALUES
-      (
-        @id_usuario,
-        @nombre,
-        @telefono
-      );
-
-      SELECT SCOPE_IDENTITY() AS id;
-    `);
-
-  return result.recordset[0].id;
+export const actualizarCliente = async (id, nombre, telefono) => {
+  const pool = getConnection();
+  const result = await pool.query(`
+    UPDATE public."Cliente"
+    SET "Nombre" = $1, "Telefono" = $2
+    WHERE "ID_CLI" = $3;
+  `, [nombre, telefono, id]);
+  return result.rowCount;
 };

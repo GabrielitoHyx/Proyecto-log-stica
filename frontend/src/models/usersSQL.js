@@ -1,61 +1,39 @@
-import { getConnection } from '../config/sqlserver.js';
+import { getConnection } from '../config/postgres.js';
 
 export const createUser = async (user) => {
-  const { correo, contrasena, rol ,preguntarc, respuestarc } = user;
-
-  const pool = await getConnection();
-
-  const result = await pool.request()
-  .input('correo', correo)
-  .input('passwordHash', contrasena)
-  .input('rol', rol)
-  .input('preguntarec', preguntarc)
-  .input('resprec', respuestarc)
-  .query(`
-    INSERT INTO l.Usuario
-    (Correo, Password_Hash, Rol, preguntarec, resprec)
-    VALUES
-    (@correo, @passwordHash, @rol, @preguntarec, @resprec);
-
-    SELECT SCOPE_IDENTITY() AS id;
-  `);
-
-    return result.recordset[0].id;  
-
-  };
-
-export const getAllUsers = async () => {  
-    const pool = await getConnection();
-    const result = await pool.request().query('SELECT * FROM l.Usuario');
-    return result.recordset;  
+  const { correo, contrasena, rol, preguntarc, respuestarc } = user;
+  const pool = getConnection();
+  const result = await pool.query(`
+    INSERT INTO public."Usuario"
+      ("Correo", "Password_Hash", "Rol", "preguntarec", "resprec")
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING "ID_Usuario" AS id;
+  `, [correo, contrasena, rol, preguntarc, respuestarc]);
+  return result.rows[0].id;
 };
 
+export const getAllUsers = async () => {
+  const pool = getConnection();
+  const result = await pool.query('SELECT * FROM public."Usuario" ORDER BY "ID_Usuario"');
+  return result.rows;
+};
 
 export const getUserByEmail = async (correo) => {
-
-  const pool = await getConnection();
-
-  const result = await pool.request()
-    .input('correo', correo)
-    .query(`
-      SELECT *
-      FROM l.Usuario
-      WHERE Correo = @correo
-    `);
-
-  return result.recordset[0];
+  const pool = getConnection();
+  const result = await pool.query(`
+    SELECT u.*, c."Estado" AS "EstadoCliente"
+    FROM public."Usuario" u
+    LEFT JOIN public."Cliente" c ON u."ID_Usuario" = c."ID_Usuario"
+    WHERE u."Correo" = $1;
+  `, [correo]);
+  return result.rows[0];
 };
 
 export const updatePassword = async (idUsuario, passwordHash) => {
-
-  const pool = await getConnection();
-
-  await pool.request()
-    .input('idUsuario', idUsuario)
-    .input('passwordHash', passwordHash)
-    .query(`
-      UPDATE l.Usuario
-      SET Password_Hash = @passwordHash
-      WHERE ID_Usuario = @idUsuario
-    `);
+  const pool = getConnection();
+  await pool.query(`
+    UPDATE public."Usuario"
+    SET "Password_Hash" = $1
+    WHERE "ID_Usuario" = $2;
+  `, [passwordHash, idUsuario]);
 };

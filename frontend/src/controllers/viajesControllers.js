@@ -1,6 +1,19 @@
-import {getAllViajes,getViajeById,createViaje,getViajesByUsuarioChofer, actualizarEstadoViaje} from '../models/viajesSQL.js';
+import {
+  getAllViajes,
+  getViajeById,
+  createViaje,
+  getViajesByUsuarioChofer,
+  getViajesByUsuarioCliente,
+  createSolicitudViajeCliente,
+  actualizarEstadoViaje,
+  asignarViaje,
+  actualizarSolicitudViajeCliente
+} from '../models/viajesSQL.js';
+
 import { getUserByEmail } from '../models/usersSQL.js';
-import { getConnection } from '../config/sqlserver.js';
+import { getConnection } from '../config/postgres.js';
+
+const pool = getConnection();
 
 
 // =====================================================
@@ -8,7 +21,6 @@ import { getConnection } from '../config/sqlserver.js';
 // =====================================================
 
 export const getViajes = async (req, res) => {
-
   try {
 
     const viajes = await getAllViajes();
@@ -17,12 +29,12 @@ export const getViajes = async (req, res) => {
 
   } catch (error) {
 
+    console.error('Error al obtener viajes:', error);
+
     res.status(500).json({
       error: error.message
     });
-
   }
-
 };
 
 
@@ -31,7 +43,6 @@ export const getViajes = async (req, res) => {
 // =====================================================
 
 export const getViaje = async (req, res) => {
-
   try {
 
     const { id } = req.params;
@@ -39,23 +50,21 @@ export const getViaje = async (req, res) => {
     const viaje = await getViajeById(id);
 
     if (!viaje) {
-
       return res.status(404).json({
         error: 'Viaje no encontrado'
       });
-
     }
 
     res.json(viaje);
 
   } catch (error) {
 
+    console.error('Error al obtener viaje:', error);
+
     res.status(500).json({
       error: error.message
     });
-
   }
-
 };
 
 
@@ -64,11 +73,9 @@ export const getViaje = async (req, res) => {
 // =====================================================
 
 export const registerViaje = async (req, res) => {
-
   try {
 
     const {
-      folio_ruta,
       correo_cliente,
       correo_chofer,
       placas,
@@ -83,12 +90,7 @@ export const registerViaje = async (req, res) => {
     } = req.body;
 
 
-    // ==========================================
-    // VALIDACIONES BÁSICAS
-    // ==========================================
-
     if (
-      !folio_ruta ||
       !correo_cliente ||
       !correo_chofer ||
       !placas ||
@@ -96,15 +98,10 @@ export const registerViaje = async (req, res) => {
       !destino ||
       !mercancia
     ) {
-
       return res.status(400).json({
         error: 'Faltan campos obligatorios'
       });
-
     }
-
-
-    const pool = await getConnection();
 
 
     // ==========================================
@@ -114,43 +111,33 @@ export const registerViaje = async (req, res) => {
     const usuarioCliente = await getUserByEmail(correo_cliente);
 
     if (!usuarioCliente) {
-
       return res.status(404).json({
         error: 'No existe un usuario con ese correo'
       });
-
     }
 
-
     if (usuarioCliente.Rol !== 'Cliente') {
-
       return res.status(400).json({
         error: 'El usuario seleccionado no tiene rol de Cliente'
       });
-
     }
 
 
-    // Obtener ID_CLI
+    const clienteResult = await pool.query(
+      `
+      SELECT "ID_CLI"
+      FROM public."Cliente"
+      WHERE "ID_Usuario" = $1
+      `,
+      [usuarioCliente.ID_Usuario]
+    );
 
-    const clienteResult = await pool.request()
-      .input('id_usuario', usuarioCliente.ID_Usuario)
-      .query(`
-        SELECT ID_CLI
-        FROM l.Cliente
-        WHERE ID_Usuario = @id_usuario
-      `);
-
-
-    const cliente = clienteResult.recordset[0];
-
+    const cliente = clienteResult.rows[0];
 
     if (!cliente) {
-
       return res.status(404).json({
         error: 'El usuario no está registrado como Cliente'
       });
-
     }
 
 
@@ -160,45 +147,34 @@ export const registerViaje = async (req, res) => {
 
     const usuarioChofer = await getUserByEmail(correo_chofer);
 
-
     if (!usuarioChofer) {
-
       return res.status(404).json({
         error: 'No existe un usuario con ese correo'
       });
-
     }
 
-
     if (usuarioChofer.Rol !== 'Chofer') {
-
       return res.status(400).json({
         error: 'El usuario seleccionado no tiene rol de Chofer'
       });
-
     }
 
 
-    // Obtener ID_Chof
+    const choferResult = await pool.query(
+      `
+      SELECT "ID_Chof"
+      FROM public."Chofer"
+      WHERE "ID_Usuario" = $1
+      `,
+      [usuarioChofer.ID_Usuario]
+    );
 
-    const choferResult = await pool.request()
-      .input('id_usuario', usuarioChofer.ID_Usuario)
-      .query(`
-        SELECT ID_Chof
-        FROM l.Chofer
-        WHERE ID_Usuario = @id_usuario
-      `);
-
-
-    const chofer = choferResult.recordset[0];
-
+    const chofer = choferResult.rows[0];
 
     if (!chofer) {
-
       return res.status(404).json({
         error: 'El usuario no está registrado como Chofer'
       });
-
     }
 
 
@@ -206,24 +182,21 @@ export const registerViaje = async (req, res) => {
     // BUSCAR CAMIÓN
     // ==========================================
 
-    const camionResult = await pool.request()
-      .input('placas', placas)
-      .query(`
-        SELECT ID_CA
-        FROM l.Camion
-        WHERE Placas = @placas
-      `);
+    const camionResult = await pool.query(
+      `
+      SELECT "ID_CA"
+      FROM public."Camion"
+      WHERE "Placas" = $1
+      `,
+      [placas]
+    );
 
-
-    const camion = camionResult.recordset[0];
-
+    const camion = camionResult.rows[0];
 
     if (!camion) {
-
       return res.status(404).json({
         error: 'No existe un camión con esas placas'
       });
-
     }
 
 
@@ -231,16 +204,10 @@ export const registerViaje = async (req, res) => {
     // CREAR VIAJE
     // ==========================================
 
-    const id = await createViaje({
-
-      folio_ruta,
-
+    const viaje = await createViaje({
       id_cli: cliente.ID_CLI,
-
       id_ca: camion.ID_CA,
-
       id_cho: chofer.ID_Chof,
-
       origen,
       destino,
       mercancia,
@@ -249,20 +216,12 @@ export const registerViaje = async (req, res) => {
       fecha_partida,
       fecha_aprox_llegada,
       pago_cliente
-
     });
 
 
-    // ==========================================
-    // RESPUESTA
-    // ==========================================
-
     res.status(201).json({
-
       mensaje: 'Viaje registrado correctamente',
-
-      id
-
+      viaje
     });
 
 
@@ -273,18 +232,150 @@ export const registerViaje = async (req, res) => {
     res.status(500).json({
       error: error.message
     });
-
   }
-
 };
 
+
 // =====================================================
-// OBTENER VIAJE POR CHOFER
+// ASIGNAR / REASIGNAR VIAJE DESDE ADMINISTRADOR
 // =====================================================
+
+export const asignarViajeAdmin = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+    const { id_cho, id_ca } = req.body;
+
+
+    const idChofer =
+      id_cho === null ||
+      id_cho === "" ||
+      id_cho === undefined
+        ? null
+        : Number(id_cho);
+
+    const idCamion =
+      id_ca === null ||
+      id_ca === "" ||
+      id_ca === undefined
+        ? null
+        : Number(id_ca);
+
+
+    if (
+      (idChofer !== null && Number.isNaN(idChofer)) ||
+      (idCamion !== null && Number.isNaN(idCamion))
+    ) {
+      return res.status(400).json({
+        error: 'El chofer o camión seleccionado no es válido'
+      });
+    }
+
+
+    if (
+      (idChofer === null) !==
+      (idCamion === null)
+    ) {
+      return res.status(400).json({
+        error:
+          'Debes asignar un chofer y un camión, o retirar ambos'
+      });
+    }
+
+
+    // ==========================================
+    // VALIDAR CHOFER
+    // ==========================================
+
+    if (idChofer !== null) {
+
+      const choferResult = await pool.query(
+        `
+        SELECT "ID_Chof"
+        FROM public."Chofer"
+        WHERE "ID_Chof" = $1
+        `,
+        [idChofer]
+      );
+
+
+      if (choferResult.rows.length === 0) {
+        return res.status(404).json({
+          error: 'El chofer seleccionado no existe'
+        });
+      }
+    }
+
+
+    // ==========================================
+    // VALIDAR CAMIÓN
+    // ==========================================
+
+    if (idCamion !== null) {
+
+      const camionResult = await pool.query(
+        `
+        SELECT "ID_CA"
+        FROM public."Camion"
+        WHERE "ID_CA" = $1
+        `,
+        [idCamion]
+      );
+
+
+      if (camionResult.rows.length === 0) {
+        return res.status(404).json({
+          error: 'El camión seleccionado no existe'
+        });
+      }
+    }
+
+
+    const viaje = await asignarViaje(
+      id,
+      idChofer,
+      idCamion
+    );
+
+
+    if (!viaje) {
+      return res.status(404).json({
+        error: 'Viaje no encontrado'
+      });
+    }
+
+
+    res.json({
+      mensaje:
+        idChofer === null
+          ? 'Asignación retirada correctamente'
+          : 'Viaje asignado correctamente',
+      viaje
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      'Error al asignar viaje:',
+      error
+    );
+
+    res.status(500).json({
+      error: error.message
+    });
+  }
+};
+
+
+// =====================================================
+// OBTENER VIAJES POR CHOFER
+// =====================================================
+
 export const getMisViajesChofer = async (req, res) => {
   try {
 
-    const idUsuario = req.session.user.id;
+    const idUsuario = req.user.id;
 
     const viajes = await getViajesByUsuarioChofer(idUsuario);
 
@@ -292,31 +383,34 @@ export const getMisViajesChofer = async (req, res) => {
 
   } catch (error) {
 
-    console.error('Error al obtener viajes del chofer:', error);
+    console.error(
+      'Error al obtener viajes del chofer:',
+      error
+    );
 
     res.status(500).json({
       error: error.message
     });
-
   }
 };
 
-//////////////////
+
+// =====================================================
+// ACTUALIZAR ESTADO DE VIAJE
+// CHOFER
+// =====================================================
 
 export const updateEstadoViaje = async (req, res) => {
-
   try {
 
     const { id } = req.params;
     const { estado } = req.body;
 
     const estadosPermitidos = [
-      'Presupuesto',
-      'Programado',
       'En tránsito',
-      'Completado',
-      'Cancelado'
+      'Completado'
     ];
+
 
     if (!estado) {
       return res.status(400).json({
@@ -324,37 +418,266 @@ export const updateEstadoViaje = async (req, res) => {
       });
     }
 
+
     if (!estadosPermitidos.includes(estado)) {
       return res.status(400).json({
-        error: 'Estado de viaje no válido'
+        error:
+          'El chofer solo puede cambiar el viaje a En tránsito o Completado'
       });
     }
 
-    const idUsuario = req.session.user.id;
 
-    const filasActualizadas = await actualizarEstadoViaje(
+    const idUsuario = req.user.id;
+
+
+    const viaje = await actualizarEstadoViaje(
       id,
       idUsuario,
       estado
     );
 
-    if (filasActualizadas === 0) {
+
+    if (!viaje) {
+
       return res.status(403).json({
-        error: 'El viaje no existe o no está asignado a este chofer'
+        error:
+          estado === 'Completado'
+            ? 'El viaje debe estar En tránsito antes de marcarlo como Completado, además debe estar asignado a este chofer'
+            : 'El viaje debe estar Programado y asignado a este chofer'
       });
+
     }
 
+
     res.json({
-      mensaje: 'Estado del viaje actualizado correctamente'
+      mensaje:
+        estado === 'Completado'
+          ? 'Viaje marcado como completado correctamente'
+          : 'Viaje iniciado correctamente',
+
+      viaje
     });
+
 
   } catch (error) {
 
-    console.error('Error al actualizar estado:', error);
+    console.error(
+      'Error al actualizar estado:',
+      error
+    );
 
     res.status(500).json({
       error: error.message
     });
+  }
+};
 
+
+// =====================================================
+// OBTENER VIAJES DEL CLIENTE ACTUAL
+// =====================================================
+
+export const getMisViajesCliente = async (req, res) => {
+  try {
+
+    const idUsuario = req.user.id;
+
+    const viajes = await getViajesByUsuarioCliente(idUsuario);
+
+    res.json({
+      viajes
+    });
+
+  } catch (error) {
+
+    console.error(
+      'Error al obtener viajes del cliente:',
+      error
+    );
+
+    res.status(500).json({
+      error: error.message
+    });
+  }
+};
+
+
+// =====================================================
+// SOLICITAR VIAJE COMO CLIENTE
+// =====================================================
+
+export const solicitarViajeCliente = async (req, res) => {
+  try {
+
+    const {
+      origen,
+      destino,
+      mercancia,
+      peso_mercancia,
+      distancia,
+      fecha_partida,
+      fecha_aprox_llegada,
+      pago_cliente
+    } = req.body;
+
+
+    if (
+      !origen ||
+      !destino ||
+      !mercancia ||
+      !fecha_partida
+    ) {
+      return res.status(400).json({
+        error:
+          'Origen, destino, mercancía y fecha de partida son obligatorios'
+      });
+    }
+
+
+    const idUsuario = req.user.id;
+
+
+    const clienteResult = await pool.query(
+      `
+      SELECT "ID_CLI"
+      FROM public."Cliente"
+      WHERE "ID_Usuario" = $1
+      `,
+      [idUsuario]
+    );
+
+
+    const cliente = clienteResult.rows[0];
+
+
+    if (!cliente) {
+      return res.status(404).json({
+        error: 'Tu usuario no está registrado como Cliente'
+      });
+    }
+
+
+    const viaje = await createSolicitudViajeCliente({
+      id_cli: cliente.ID_CLI,
+      origen,
+      destino,
+      mercancia,
+      peso_mercancia,
+      distancia,
+      fecha_partida,
+      fecha_aprox_llegada,
+      pago_cliente
+    });
+
+
+    res.status(201).json({
+      mensaje: 'Solicitud de viaje enviada correctamente',
+      viaje
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      'Error al solicitar viaje como cliente:',
+      error
+    );
+
+    res.status(500).json({
+      error: error.message
+    });
+  }
+};
+
+
+// =====================================================
+// EDITAR SOLICITUD DE VIAJE COMO CLIENTE
+// =====================================================
+
+export const editarSolicitudViajeCliente = async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const {
+      origen,
+      destino,
+      mercancia,
+      peso_mercancia,
+      distancia,
+      fecha_partida,
+      fecha_aprox_llegada,
+      pago_cliente
+    } = req.body;
+
+
+    // ==========================================
+    // VALIDACIONES
+    // ==========================================
+
+    if (
+      !origen ||
+      !destino ||
+      !mercancia ||
+      !fecha_partida
+    ) {
+      return res.status(400).json({
+        error:
+          'Origen, destino, mercancía y fecha de partida son obligatorios'
+      });
+    }
+
+
+    const idUsuario = req.user.id;
+
+
+    // ==========================================
+    // ACTUALIZAR VIAJE
+    // ==========================================
+
+    const viaje = await actualizarSolicitudViajeCliente(
+      id,
+      idUsuario,
+      {
+        origen,
+        destino,
+        mercancia,
+        peso_mercancia,
+        distancia,
+        fecha_partida,
+        fecha_aprox_llegada,
+        pago_cliente
+      }
+    );
+
+
+    // ==========================================
+    // VALIDAR ACTUALIZACIÓN
+    // ==========================================
+
+    if (!viaje) {
+      return res.status(403).json({
+        error:
+          'El viaje no existe, no te pertenece o ya no se puede editar'
+      });
+    }
+
+
+    res.json({
+      mensaje: 'Solicitud de viaje actualizada correctamente',
+      viaje
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      'Error al editar solicitud de viaje:',
+      error
+    );
+
+    res.status(500).json({
+      error: error.message
+    });
   }
 };

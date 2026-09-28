@@ -1,0 +1,14 @@
+El trabajo realizado por Emily Eileen en este proyecto antes de su adición como colaboradora en el repositorio fue el diseño y la implementación de las interfaces del proyecto más específicamente los siguientes archivos listados a continuación
+
+Camiones.jsx
+Choferes.jsx
+Clientes.jsx
+Dashboard.css
+Dashboard.jsx
+Login.jsx
+Recuperar.css
+Recuperar.jsx
+Registro.jsx
+Usuarios.jsx
+Viajes.css
+Viajes.jsx

@@ -1,7 +1,14 @@
-import { createUser, getAllUsers, getUserByEmail,updatePassword } from '../models/usersSQL.js';
-import { validateUser } from '../models/validator.js';
+import {
+  createUser,
+  getAllUsers,
+  getUserByEmail,
+  updatePassword
+} from '../models/usersSQL.js';
+
+import { validateUser } from '../validator/validator.js';
 
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 export const registerUser = async (req, res) => {
   try {
@@ -84,18 +91,43 @@ export const login = async (req, res) => {
       });
     }
 
-    req.session.user = {
+    // Comprobar si un cliente está activo
+    if (
+      usuario.Rol === 'Cliente' &&
+      usuario.EstadoCliente === false
+    ) {
+
+      return res.status(403).json({
+        error: 'El cliente está dado de baja y no puede iniciar sesión'
+      });
+
+    }
+
+    // Información que queremos guardar dentro del JWT
+    const usuarioToken = {
       id: usuario.ID_Usuario,
       correo: usuario.Correo,
       rol: usuario.Rol
     };
 
+    // Crear JWT
+    const token = jwt.sign(
+      usuarioToken,
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES_IN || '1h'
+      }
+    );
+
     res.json({
       mensaje: 'Login correcto',
-      usuario: req.session.user
+      token,
+      usuario: usuarioToken
     });
 
   } catch (error) {
+
+    console.error('Error en login:', error);
 
     res.status(500).json({
       error: error.message
@@ -105,40 +137,49 @@ export const login = async (req, res) => {
 
 };
 
-
-// Logout
-export const logout = (req, res) => {
-
-  req.session.destroy((error) => {
-
-    if (error) {
-      return res.status(500).json({
-        error: 'No se pudo cerrar la sesión'
-      });
-    }
-
-    res.json({
-      mensaje: 'Sesión cerrada correctamente'
-    });
-
-  });
-
-};
-
+// Con JWT, no es necesario cerrar sesión en el servidor, el token se 
+// almacena en el cliente y tiene una fecha de expiración.
 
 // Verificar si hay algún usuario conectado
 export const getSession = (req, res) => {
 
-  if (!req.session.user) {
+  try {
+
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({
+        autenticado: false
+      });
+    }
+
+    const parts = authHeader.split(' ');
+
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      return res.status(401).json({
+        autenticado: false
+      });
+    }
+
+    const token = parts[1];
+
+    const usuario = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      autenticado: true,
+      usuario
+    });
+
+  } catch (error) {
+
     return res.status(401).json({
       autenticado: false
     });
-  }
 
-  res.json({
-    autenticado: true,
-    usuario: req.session.user
-  });
+  }
 
 };
 

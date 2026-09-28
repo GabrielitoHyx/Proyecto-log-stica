@@ -20,15 +20,32 @@ export function AuthProvider({ children }) {
 
     const verificarSesion = async () => {
 
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setCargando(false);
+        return;
+      }
+
       try {
 
         const data = await api("/api/session");
 
         if (data.autenticado) {
+
           setUsuario(data.usuario);
+
+          localStorage.setItem(
+            "usuario",
+            JSON.stringify(data.usuario)
+          );
+
         }
 
       } catch (error) {
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("usuario");
 
         setUsuario(null);
 
@@ -58,17 +75,32 @@ export function AuthProvider({ children }) {
 
     });
 
+    // Guardar JWT
+    localStorage.setItem(
+      "token",
+      data.token
+    );
+
+    // Guardar información del usuario
+    localStorage.setItem(
+      "usuario",
+      JSON.stringify(data.usuario)
+    );
+
     setUsuario(data.usuario);
 
     return data.usuario;
+
   };
 
 
-  const logout = async () => {
+  const logout = () => {
 
-    await api("/api/logout", {
-      method: "POST"
-    });
+    // Eliminar JWT
+    localStorage.removeItem("token");
+
+    // Eliminar información del usuario
+    localStorage.removeItem("usuario");
 
     setUsuario(null);
 
@@ -92,6 +124,7 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
 
   );
+
 }
 
 
