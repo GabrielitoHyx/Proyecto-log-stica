@@ -7,8 +7,8 @@ const { Pool } = pg;
 
 const pool = new Pool({
   host: process.env.PGHOST,
-  port: Number(process.env.PGPORT || 5432),
-  database: process.env.PGDATABASE,
+  port: Number(process.env.PGPORT || 6543),
+  database: process.env.PGDATABASE || 'postgres',
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
 
@@ -16,7 +16,7 @@ const pool = new Pool({
     rejectUnauthorized: false
   },
 
-  max: Number(process.env.PGPOOL_MAX || 10),
+  max: Number(process.env.PGPOOL_MAX || 1),
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000
 });
